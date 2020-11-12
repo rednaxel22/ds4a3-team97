@@ -61,6 +61,9 @@ ventas['weekofyear'] = ventas['invoice_date'].dt.weekofyear
 # sales_persons = df_sales['Vendedor'].dropna().unique()
 # cities = df_sales['Ciudad'].dropna().unique()
 
+############################################
+# Datos de los filtros
+############################################
 products = ventas['product_name'].unique()
 customers = ventas['customer_name'].dropna().unique()
 channels = ventas['type_client'].dropna().unique()
@@ -165,46 +168,93 @@ insert_heatmap()
 ###############################################
 
 
-def get_top_three_sales(city):
-    ventas_agg = ventas[ventas['city_name'] == city].groupby(
+def get_top_three_sales(city=None, channel=None, salesperson=None, product=None, customer=None):
+    ventas_filtered = ventas
+    if city:
+        ventas_filtered = ventas[(ventas['city_name'] == city)]    
+    if channel:
+        ventas_filtered = ventas[(ventas['type_client'] == channel)]
+    if salesperson:
+        ventas_filtered = ventas[(ventas['salesperson_name'] == salesperson)]
+    if product:
+        ventas_filtered = ventas_filtered[ventas_filtered['product_name'].isin(product)]
+    if customer:
+        ventas_filtered = ventas_filtered[ventas_filtered['customer_name'].isin(customer)]
+    ventas_agg = ventas_filtered.groupby(
         'product_name').agg({'invoice_number': 'count'})
+    # ventas_agg = ventas[(ventas['city_name'] == city) & (ventas['type_client'] == channel) & (ventas['salesperson_name'] == salesperson)].groupby(
+    #     'product_name').agg({'invoice_number': 'count'})
     ventas_agg_top3 = ventas_agg.sort_values(
         by="invoice_number", ascending=False).head(3)
     ventas_agg_top3.reset_index(inplace=True)
     return(ventas_agg_top3)
 
 
-ventas_agg_top_prod = get_top_three_sales('MEDELLIN')
+ventas_agg_top_prod = get_top_three_sales()
 
 
-def get_top_three_sales_cop(city):
-    ventas_agg = ventas[ventas['city_name'] == city].groupby(
+def get_top_three_sales_cop(city=None, channel=None, salesperson=None, product=None, customer=None):
+    ventas_filtered = ventas
+    if city:
+        ventas_filtered = ventas[(ventas['city_name'] == city)]    
+    if channel:
+        ventas_filtered = ventas[(ventas['type_client'] == channel)]
+    if salesperson:
+        ventas_filtered = ventas[(ventas['salesperson_name'] == salesperson)]
+    if product:
+        ventas_filtered = ventas_filtered[ventas_filtered['product_name'].isin(product)]
+    if customer:
+        ventas_filtered = ventas_filtered[ventas_filtered['customer_name'].isin(customer)]
+    ventas_agg = ventas_filtered.groupby(
         'product_name').agg({'price_bef_vat': 'sum'})
+    # ventas_agg = ventas[(ventas['city_name'] == city) & (ventas['type_client'] == channel) & (ventas['salesperson_name'] == salesperson)].groupby(
+    #     'product_name').agg({'price_bef_vat': 'sum'})
     ventas_agg_top3 = ventas_agg.sort_values(
         by="price_bef_vat", ascending=False).head(3)
     ventas_agg_top3.reset_index(inplace=True)
     return(ventas_agg_top3)
 
 
-ventas_agg_top_prod_cop = get_top_three_sales_cop('MEDELLIN')
+ventas_agg_top_prod_cop = get_top_three_sales_cop()
 
 
 ###############################################
 # Sales by Product Bar Chart
 ###############################################
 
-def top_20_sales_products(city):
+def top_20_sales_products(city=None, channel=None, salesperson=None, product=None, customer=None):
     # ventas_agg = ventas.groupby('product_name').agg({'invoice_number': 'count'})
     # ventas_agg = ventas[ventas['product_name'].isin(products)].groupby('product_name').agg({'invoice_number': 'count'})
-    ventas_agg = ventas[ventas['city_name']==city].groupby('product_name').agg({'invoice_number': 'count'})
+    ventas_filtered = ventas
+    if city:
+        ventas_filtered = ventas[(ventas['city_name'] == city)]    
+    if channel:
+        ventas_filtered = ventas[(ventas['type_client'] == channel)]
+    if salesperson:
+        ventas_filtered = ventas[(ventas['salesperson_name'] == salesperson)]
+    if product:
+        ventas_filtered = ventas_filtered[ventas_filtered['product_name'].isin(product)]
+    if customer:
+        ventas_filtered = ventas_filtered[ventas_filtered['customer_name'].isin(customer)]
+    ventas_agg = ventas_filtered.groupby('product_name').agg({'invoice_number': 'count'})
     ventas_agg_top20 = ventas_agg.sort_values(by="invoice_number", ascending=False).head(20)
     ventas_agg_top20.reset_index(inplace=True)
     return(ventas_agg_top20)
 
-def sales_by_product_graph(city):
-    ventas_agg_top20 = top_20_sales_products(city)
+def sales_by_product_graph(city=None, channel=None, salesperson=None, product=None, customer=None):
+    ventas_agg_top20 = top_20_sales_products(city, channel, salesperson, product, customer)
     top_sale_products = ventas[ventas.product_name.isin(ventas_agg_top20['product_name'].head(3))].copy()
-    top_sale_products = top_sale_products[top_sale_products['city_name']==city]
+    # top_sale_products = top_sale_products[(top_sale_products['city_name'] == city) & (top_sale_products['type_client'] == channel) & (top_sale_products['salesperson_name'] == salesperson)]
+    if city:
+        top_sale_products = top_sale_products[(top_sale_products['city_name'] == city)]    
+    if channel:
+        top_sale_products = top_sale_products[(top_sale_products['type_client'] == channel)]
+    if salesperson:
+        top_sale_products = top_sale_products[(top_sale_products['salesperson_name'] == salesperson)]
+    if product:
+        top_sale_products = top_sale_products[top_sale_products['product_name'].isin(product)]
+    if customer:
+        top_sale_products = top_sale_products[top_sale_products['customer_name'].isin(customer)]
     top_sale_products['invoice_year'] = pd.DatetimeIndex(top_sale_products['invoice_date']).year
     top_sale_products['invoice_month'] = pd.DatetimeIndex(top_sale_products['invoice_date']).month
     top_sales_prod_agg = top_sale_products.groupby(['invoice_year', 'invoice_month', 'product_name']).agg({'invoice_number': 'count'})
@@ -215,6 +265,27 @@ def sales_by_product_graph(city):
     # return(fig)
 
 ###############################################
+# Pie Chart Channels
+###############################################
+def sales_by_channel(city=None, channel=None, salesperson=None, product=None, customer=None):
+    ventas_filtered = ventas
+    if city:
+        ventas_filtered = ventas[(ventas['city_name'] == city)]    
+    if channel:
+        ventas_filtered = ventas[(ventas['type_client'] == channel)]
+    if salesperson:
+        ventas_filtered = ventas[(ventas['salesperson_name'] == salesperson)]
+    if product:
+        ventas_filtered = ventas_filtered[ventas_filtered['product_name'].isin(product)]
+    if customer:
+        ventas_filtered = ventas_filtered[ventas_filtered['customer_name'].isin(customer)]
+    ventas_unicas = ventas_filtered.drop_duplicates(subset=['invoice_number'])
+    df_ventas_canal_agg = ventas_unicas.groupby('type_client').agg({'invoice_number': 'count'})
+    df_ventas_canal_agg.reset_index(inplace=True)
+    df_ventas_canal_agg.sort_values(by="invoice_number", ascending=False)
+    return df_ventas_canal_agg
+    # fig = go.Figure(data=[go.Pie(labels=df_ventas_canal_agg['type_client'], values=df_ventas_canal_agg['invoice_number'], textinfo='label+value', hole=.5)])
+    # return(fig)
 
 
 ###############################################
@@ -248,6 +319,7 @@ layout = html.Div([
                         options=[{'label': i, 'value': i} for i in products],
                         value=['PAN ARROZ ROSQUILLA CHIA LINAZA 75G *12','TÉ VERDE SPIRULINA SPIRUTÉ 30 BOLS *45G','PAN ARROZ ROSQUILLA CHIA LINAZA 40G  *12',''],
                         multi=True,
+                        placeholder="Select a product (If empty all products are selected)",
                         # style={'width': '50%'}
                     ),
                 )
@@ -260,8 +332,9 @@ layout = html.Div([
                     dcc.Dropdown(
                         id='customer_dd',
                         options=[{'label': i, 'value': i} for i in customers],
-                        value='JUAN SEBASTIAN GIRALDO SEPULVEDA',
+                        value='',
                         multi=True,
+                        placeholder="Select a customer (If empty all customers are selected)",
                         # style={'width': '50%'}
                     ),
                 )
@@ -306,7 +379,7 @@ layout = html.Div([
                     dcc.Dropdown(
                         id='channel_dd',
                         options=[{'label': i, 'value': i} for i in channels],
-                        value='Minorista',
+                        value='',
                         # multi=True,
                         # style={'width': '50%'}
                     ),
@@ -321,7 +394,7 @@ layout = html.Div([
                         id='sales_person_dd',
                         options=[{'label': i, 'value': i}
                                  for i in sales_persons],
-                        value='NATURELA',
+                        value='',
                         # multi=True,
                         # style={'width': '50%'}
                     ),
@@ -335,7 +408,7 @@ layout = html.Div([
                     dcc.Dropdown(
                         id='city_dd',
                         options=[{'label': i, 'value': i} for i in cities],
-                        value='MEDELLIN',
+                        value='',
                         # multi=True,
                         # style={'width': '50%'}
                     ),
@@ -392,7 +465,7 @@ layout = html.Div([
             ),
             dcc.Graph(id='product-detail-by-month'),
         ], style={'width': '100%'})]), width=6),
-        dbc.Col(dcc.Graph(id='pie_cases_or_deaths'), width=3),
+        dbc.Col(dcc.Graph(id='pie-channels'), width=3),
     ]),
 
 
@@ -404,17 +477,22 @@ layout = html.Div([
 @app.callback(
     [Output('datatable-top-products', 'data'),
     Output('datatable-top-products-cop', 'data'),
-    Output('product-detail-by-month', 'figure'),],
-    [Input('city_dd', "value")])
-def update_table(city):
+    Output('product-detail-by-month', 'figure'),
+    Output('pie-channels', 'figure'),],
+    [Input('city_dd', "value"),
+    Input('channel_dd', "value"),
+    Input('sales_person_dd', "value"),
+    Input('product_dd', "value"),
+    Input('customer_dd', "value"),])
+def update_table(city, channel, sales_person, product_value, customer):
     # Tables 
-    ventas_agg_top_prod = get_top_three_sales(city)
-    ventas_agg_top_prod_cop = get_top_three_sales_cop(city)
+    ventas_agg_top_prod = get_top_three_sales(city, channel, sales_person, product_value, customer)
+    ventas_agg_top_prod_cop = get_top_three_sales_cop(city, channel, sales_person, product_value, customer)
     table1 = ventas_agg_top_prod.to_dict('records')
     table2 = ventas_agg_top_prod_cop.to_dict('records')
     
     # Product Detail
-    sales_by_product_data = sales_by_product_graph(city)
+    sales_by_product_data = sales_by_product_graph(city, channel, sales_person, product_value, customer)
     products_top = sales_by_product_data['product_name'].unique()
     fig1 = go.Figure()
     for product in products_top:
@@ -435,7 +513,15 @@ def update_table(city):
                         title='Top 3 Products history (Filters apply)',)
     
     # Sales by Channel
-    
 
-    return table1, table2, fig1
+    df_ventas_canal_agg = sales_by_channel(city, channel, sales_person, product_value, customer)
+
+    fig2 = go.Figure(
+            data=[go.Pie(labels=df_ventas_canal_agg['type_client'], 
+            values=df_ventas_canal_agg['invoice_number'], 
+            textinfo='label+value', hole=.5)])
+
+    fig2.update_layout(title='Sales by Channel')
+
+    return table1, table2, fig1, fig2
 
