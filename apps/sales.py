@@ -42,7 +42,7 @@ def load_sales_info():
             verified, zone, id, description, code, presentation,
             product_line
         from public.sales_01 s inner join public.product p on s.product_code = p.code
-        where invoice_date < "2020-09-01";
+        where invoice_date < '2020-09-01';
     ''', cnx)
     return(sales)
 
