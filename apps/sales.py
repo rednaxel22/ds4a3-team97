@@ -30,11 +30,19 @@ cnx = db_connect()
 
 def load_sales_info():
     sales = pd.read_sql_query('''
-    SELECT invoice_number, invoice_date, customer_id, contact_name, product_code, product_name, customer_name, quantity, sales_unit, sales_unit_price, kilos, 
-        price_bef_vat::numeric, price_per_kilo, salesperson_code, salesperson_name, city_code, "cost", invoice_address, city_name, salesperson_id, 
-        client_name, type_id, type_person, type_client, nature_economy, aditional_condition, country, city, main_address, payment_terms, credit_state, 
-        email, contact_person, seller, verified, "zone", id
-    FROM public.sales_01;
+    Select 
+        invoice_number, invoice_date, customer_id, contact_name,
+            product_code, product_name, customer_name, quantity,
+            sales_unit, sales_unit_price::decimal, kilos, price_bef_vat::decimal,
+            price_per_kilo, salesperson_code, salesperson_name, city_code,
+            cost, invoice_address, city_name, salesperson_id, client_name,
+            type_id, type_person, type_client, nature_economy,
+            aditional_condition, country, city, main_address,
+            payment_terms, credit_state, email, contact_person, seller,
+            verified, zone, id, description, code, presentation,
+            product_line
+        from public.sales_01 s inner join public.product p on s.product_code = p.code
+        where invoice_date < '2020-09-01';
     ''', cnx)
     return(sales)
 
