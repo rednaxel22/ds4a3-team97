@@ -1,46 +1,71 @@
+import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
-# needed only if running this as a single page app
-#external_stylesheets = [dbc.themes.LUX]
+# must add this line in order for the app to be deployed successfully on Heroku
+from app import server
+from app import app
+# import all pages in the app
+from apps import sales, time, home, neural
 
-#app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+# building the navigation bar
+# https://github.com/facultyai/dash-bootstrap-components/blob/master/examples/advanced-component-usage/Navbars.py
+nav_item_home = dbc.NavItem(dbc.NavLink("Home", href="/home"))
+nav_item_sales = dbc.NavItem(dbc.NavLink("Sales", href="/sales"))
+nav_item_inventory = dbc.NavItem(dbc.NavLink("Time Model", href="/time"))
+nav_item_neural = dbc.NavItem(dbc.NavLink("Predictions", href="/neural"))
 
-# change to app.layout if running as single page app instead
-layout = html.Div([
-    dbc.Container([
-        dbc.Row([
-            dbc.Col(html.H1("Naturela Analytics Analysis Dashboard", className="text-center")
-                    , className="mb-5 mt-5")
-        ]),
-        dbc.Row([
-            dbc.Col(html.Div("Naturela, providing nutrition and well-being since 2007, with local and natural ingredients of high nutritional value; using the spirulina in most of the products."), align="baseline"),
-            ]),
+navbar = dbc.Navbar(
+    dbc.Container(
+        [
+            html.A(
+                # Use row and col to control vertical alignment of logo / brand
+                dbc.Row(
+                    [
+                        dbc.Col(html.Img(src="/assets/Logo-menu.png", height="50px")),
+                        dbc.Col(dbc.NavbarBrand("Naturela", className="ml-2")),
+                    ],
+                    align="center",
+                    no_gutters=True,
+                ),
+                href="/home",
+            ),
+            # dbc.NavbarToggler(id="navbar-toggler2"),
+            dbc.Collapse(
+                dbc.Nav(
+                    # right align dropdown menu with ml-auto className
+                    [nav_item_home, nav_item_sales, nav_item_inventory, nav_item_neural], className="ml-auto", navbar=True
+                ),
+                # id="navbar-collapse2",
+                navbar=True,
+            ),
+        ]
+    ),
+    # color="dark",
+    # dark=True,
+    className="mb-5",
+)
 
-        dbc.Row([
-            dbc.Col(html.Div("The uncertainty of our planning team when making the forecast (number of units to produce and raw materials to buy), due to the high number of references that are handled month by month and variables to consider such as product category, price, sales channel, customer location and customer type makes it essential for the team to have a model that supports this process. Actually, the production is planned based on sales historic of the previous year."), align="around"),
-        ], justify="center"),
-        dbc.Row([
-            dbc.Col(html.Iframe(src=f'https://www.youtube.com/embed/5cnpaf1H0pQ', height="400px", width="720px")
-                    , className="mb-5 mt-5 text-center")
-        ]),
-
-        dbc.Row([
-            dbc.Col(dbc.Card(children=[dbc.Button("Visit us in naturela.com",
-                                                  href="https://naturela.com/",
-                                                  color="primary",
-                                                  className="mt-3"),
-                                       ],
-                             body=True, color="dark", outline=True)
-                    , width=12, className="mb-4"),
-        ], className="mb-5"),
-
-
-    ])
-
+# embedding the navigation bar
+app.layout = html.Div([
+    dcc.Location(id='url', refresh=False),
+    navbar,
+    html.Div(id='page-content')
 ])
 
 
-# needed only if running this as a single page app
-# if __name__ == '__main__':
-#     app.run_server(host='127.0.0.1', debug=True)
+@app.callback(Output('page-content', 'children'),
+              [Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname == '/sales':
+        return sales.layout
+    elif pathname == '/time':
+        return time.layout
+    elif pathname == '/neural':
+        return neural.layout
+    else:
+        return home.layout
+
+if __name__ == '__main__':
+    app.run_server(host='0.0.0.0', debug=True, threaded=True)
