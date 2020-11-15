@@ -74,17 +74,23 @@ product_line = ventas['product_line'].dropna().unique()
 
 
 ###############################################
-# Sales by onth of year
+# Prophet
 ###############################################
 
-def prophet_model_city(city='MEDELLIN'):
+## Se encarga de adecuar el DataFrame para los modelos de prophet
+def prophet_sales_data():
     ventas_prophet = ventas.copy()
     ventas_prophet['month'] = ventas_prophet['invoice_date'].dt.to_period('M')
     ventas_prophet = ventas_prophet.sort_values(['month'], ascending=True)
     ventas_prophet["year"] = ventas_prophet["invoice_date"].dt.year
     ventas_prophet = ventas_prophet[ventas_prophet["year"].isin([2017,2018,2019,2020])]
-    prophet_df = ventas_prophet[ventas_prophet["city_name"]=='MEDELLIN']
-    #print(prophet_df.head())
+    return(ventas_prophet)
+
+## Modelo prophet para ciudad
+def prophet_city_model(city='MEDELLIN'):
+    ventas_prophet = prophet_sales_data()
+    #prophet_df = ventas_prophet[ventas_prophet["city_name"]=='MEDELLIN']
+    prophet_df = ventas_prophet[ventas_prophet["city_name"]==city]
     prophet_df = prophet_df.groupby(prophet_df["month"])["quantity"].sum()
     prophet_df = pd.DataFrame(prophet_df)
     prophet_df['ds']= prophet_df.index.to_timestamp()
@@ -96,8 +102,48 @@ def prophet_model_city(city='MEDELLIN'):
     forecast_times = prophetmodel.make_future_dataframe(periods=12,freq='M')
     forecast = prophetmodel.predict(forecast_times)
     forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail()
-    propeht_figure = plot_plotly(prophetmodel, forecast,uncertainty=True, xlabel="month",ylabel=" City Sales (units)")
-    return(propeht_figure)
+    prophet_figure = plot_plotly(prophetmodel, forecast,uncertainty=True, xlabel="month",ylabel=" City Sales (units)")
+    return(prophet_figure)
+
+## Modelo prophet para los canales
+def prophet_channel_model(channel='On line'):
+    ventas_prophet = prophet_sales_data()
+    #prophet_df = ventas_prophet[ventas_prophet["type_client"]=='On line']
+    prophet_df = ventas_prophet[ventas_prophet["type_client"]==channel]
+    prophet_df = prophet_df.groupby(prophet_df["month"])["type_client"].value_counts()
+    prophet_df = pd.DataFrame(prophet_df)
+    prophet_df["ds"] = [prophet_df.index[i][0].to_timestamp() for i in range(len(prophet_df))]
+    prophet_df["y"] = prophet_df["type_client"]
+    prophet_df =  prophet_df.drop(["type_client"], axis=1)
+
+    prophetmodel = Prophet()
+    prophetmodel.fit(prophet_df)
+    forecast_times = prophetmodel.make_future_dataframe(periods=12,freq='M')
+    forecast = prophetmodel.predict(forecast_times)
+    forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail()
+    prophet_figure = plot_plotly(prophetmodel, forecast,uncertainty=True, xlabel="month",ylabel=" Online Sales (sales quantity)")
+    return(prophet_figure)
+
+## Modelo prophet para las categorías
+def prophet_category_model(product_line='Solids'):
+    ventas_prophet = prophet_sales_data()
+    #prophet_df = ventas_prophet[ventas_prophet["product_line"]=='Solids']
+    prophet_df = ventas_prophet[ventas_prophet["product_line"]==product_line]
+    prophet_df = prophet_df.groupby(prophet_df["month"])["product_line"].value_counts()
+    prophet_df = pd.DataFrame(prophet_df)
+    prophet_df["ds"] = [prophet_df.index[i][0].to_timestamp() for i in range(len(prophet_df))]
+    prophet_df["y"] = prophet_df["product_line"]
+    prophet_df =  prophet_df.drop(["product_line"], axis=1)
+
+    prophetmodel = Prophet()
+    prophetmodel.fit(prophet_df)
+    forecast_times = prophetmodel.make_future_dataframe(periods=12,freq='M')
+    forecast = prophetmodel.predict(forecast_times)
+    forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail()
+    prophet_figure = plot_plotly(prophetmodel, forecast,uncertainty=True, xlabel="month",ylabel=" Solids (sales quantity)")
+    return(prophet_figure)
+
+###############################################
 
 
 ###############################################
@@ -125,7 +171,7 @@ layout = html.Div([
                     dcc.Dropdown(
                         id='cities_dd',
                         options=[{'label': i, 'value': i} for i in cities],
-                        value='',
+                        value='MEDELLIN',
                     ),
                 ])
             ]),
@@ -146,8 +192,8 @@ layout = html.Div([
                 dbc.Col([
                     dcc.Dropdown(
                         id='channel_dd',
-                        options=[{'label': i, 'value': i} for i in cities],
-                        value='',
+                        options=[{'label': i, 'value': i} for i in channels],
+                        value='On line',
                     ),
                 ])
             ]),
@@ -162,14 +208,14 @@ layout = html.Div([
     dbc.Row([
         dbc.Col([
             dbc.Row([
-                dbc.Col([html.Div([html.H5(children='Time Series by City')], className="p-3")])
+                dbc.Col([html.Div([html.H5(children='Time Series by Product Line')], className="p-3")])
             ]),
             dbc.Row([
                 dbc.Col([
                     dcc.Dropdown(
                         id='product_line_dd',
-                        options=[{'label': i, 'value': i} for i in cities],
-                        value='',
+                        options=[{'label': i, 'value': i} for i in product_line],
+                        value='Solids',
                     ),
                 ])
             ]),
@@ -189,13 +235,17 @@ layout = html.Div([
 
 @app.callback(
     [Output('time-city', 'figure'),
-    ],
+    Output('time-channel', 'figure'),
+    Output('time-product-line', 'figure'),],
     [Input('cities_dd', "value"),
-    # Input('channel_dd', "value"),
-    # Input('product_line_dd', "value"),
-    ])
-def update_table(city):
-    
-    fig1 = prophet_model_city(city)
-    return fig1
+    Input('channel_dd', "value"),
+    Input('product_line_dd', "value"),])
+def update_table(cities_dd, channel_dd, product_line_dd):
+    #city='MEDELLIN'
+    #channel='On line'
+    #product_line = 'Solids'
+    fig1 = prophet_city_model(cities_dd)
+    fig2 = prophet_channel_model(channel_dd)
+    fig3 = prophet_category_model(product_line_dd)
+    return fig1, fig2, fig3
 
