@@ -52,14 +52,6 @@ neuralnet_city = load_nn_city_info()
 neuralnet_chan = load_nn_chan_info()
 neuralnet_cate = load_nn_cate_info()
 
-# print(ventas.columns)
-
-# df_sales = pd.read_csv('ventas_clientes_2015_2020.csv')
-# products = df_sales['pronom'].unique()
-# customers = df_sales['Nombre Cliente (Factura)'].dropna().unique()
-# channels = df_sales['Tipo de Cliente'].dropna().unique()
-# sales_persons = df_sales['Vendedor'].dropna().unique()
-# cities = df_sales['Ciudad'].dropna().unique()
 
 ############################################
 # Datos de los filtros
@@ -67,13 +59,6 @@ neuralnet_cate = load_nn_cate_info()
 cities = neuralnet_city['city'].unique()
 channels = neuralnet_chan['channel'].unique()
 product_line = neuralnet_cate['product_line'].unique()
-
-#products = ventas['product_name'].unique()
-#customers = ventas['customer_name'].dropna().unique()
-#channels = ventas['type_client'].dropna().unique()
-#sales_persons = ventas['salesperson_name'].dropna().unique()
-#cities = ventas['city_name'].dropna().unique()
-#product_line = ventas['product_line'].dropna().unique()
 
 
 ###############################################
