@@ -7,13 +7,14 @@ import dash_bootstrap_components as dbc
 from app import server
 from app import app
 # import all pages in the app
-from apps import sales, time, home
+from apps import sales, time, home, neural
 
 # building the navigation bar
 # https://github.com/facultyai/dash-bootstrap-components/blob/master/examples/advanced-component-usage/Navbars.py
 nav_item_home = dbc.NavItem(dbc.NavLink("Home", href="/home"))
 nav_item_sales = dbc.NavItem(dbc.NavLink("Sales", href="/sales"))
 nav_item_inventory = dbc.NavItem(dbc.NavLink("Time Model", href="/time"))
+nav_item_neural = dbc.NavItem(dbc.NavLink("Predictions", href="/neural"))
 
 navbar = dbc.Navbar(
     dbc.Container(
@@ -34,7 +35,7 @@ navbar = dbc.Navbar(
             dbc.Collapse(
                 dbc.Nav(
                     # right align dropdown menu with ml-auto className
-                    [nav_item_home, nav_item_sales, nav_item_inventory], className="ml-auto", navbar=True
+                    [nav_item_home, nav_item_sales, nav_item_inventory, nav_item_neural], className="ml-auto", navbar=True
                 ),
                 # id="navbar-collapse2",
                 navbar=True,
@@ -61,8 +62,10 @@ def display_page(pathname):
         return sales.layout
     elif pathname == '/time':
         return time.layout
+    elif pathname == '/neural':
+        return neural.layout
     else:
         return home.layout
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', debug=True)
+    app.run_server(host='0.0.0.0', debug=True, threaded=True)
