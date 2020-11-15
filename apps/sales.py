@@ -9,6 +9,8 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 import dash_table as dt
+import dash_table.FormatTemplate as FormatTemplate
+from dash_table.Format import Format, Scheme, Sign, Symbol, Group
 
 
 from app import app
@@ -40,7 +42,7 @@ def load_sales_info():
             aditional_condition, country, city, main_address,
             payment_terms, credit_state, email, contact_person, seller,
             verified, zone, id, description, code, presentation,
-            product_line
+            product_line, concat(description, presentation) as product_description
         from public.sales_01 s inner join public.product p on s.product_code = p.code
         where invoice_date < '2020-09-01';
     ''', cnx)
@@ -64,7 +66,7 @@ ventas['weekofyear'] = ventas['invoice_date'].dt.weekofyear
 ############################################
 # Datos de los filtros
 ############################################
-products = ventas['product_name'].unique()
+products = ventas['product_description'].unique()
 customers = ventas['customer_name'].dropna().unique()
 channels = ventas['type_client'].dropna().unique()
 sales_persons = ventas['salesperson_name'].dropna().unique()
@@ -178,18 +180,19 @@ def get_top_three_sales(city=None, channel=None, salesperson=None, product=None,
     if salesperson:
         ventas_filtered = ventas[(ventas['salesperson_name'] == salesperson)]
     if product:
-        ventas_filtered = ventas_filtered[ventas_filtered['product_name'].isin(product)]
+        ventas_filtered = ventas_filtered[ventas_filtered['product_description'].isin(product)]
     if customer:
         ventas_filtered = ventas_filtered[ventas_filtered['customer_name'].isin(customer)]
     if product_line:
         ventas_filtered = ventas[(ventas['product_line'] == product_line)]
     ventas_agg = ventas_filtered.groupby(
-        'product_name').agg({'invoice_number': 'count'})
+        'product_description').agg({'invoice_number': 'count'})
     # ventas_agg = ventas[(ventas['city_name'] == city) & (ventas['type_client'] == channel) & (ventas['salesperson_name'] == salesperson)].groupby(
     #     'product_name').agg({'invoice_number': 'count'})
     ventas_agg_top3 = ventas_agg.sort_values(
         by="invoice_number", ascending=False).head(3)
     ventas_agg_top3.reset_index(inplace=True)
+    ventas_agg_top3['invoice_number'].map('{:,.2f}'.format)
     return(ventas_agg_top3)
 
 
@@ -205,18 +208,19 @@ def get_top_three_sales_cop(city=None, channel=None, salesperson=None, product=N
     if salesperson:
         ventas_filtered = ventas[(ventas['salesperson_name'] == salesperson)]
     if product:
-        ventas_filtered = ventas_filtered[ventas_filtered['product_name'].isin(product)]
+        ventas_filtered = ventas_filtered[ventas_filtered['product_description'].isin(product)]
     if customer:
         ventas_filtered = ventas_filtered[ventas_filtered['customer_name'].isin(customer)]
     if product_line:
         ventas_filtered = ventas[(ventas['product_line'] == product_line)]
     ventas_agg = ventas_filtered.groupby(
-        'product_name').agg({'price_bef_vat': 'sum'})
+        'product_description').agg({'price_bef_vat': 'sum'})
     # ventas_agg = ventas[(ventas['city_name'] == city) & (ventas['type_client'] == channel) & (ventas['salesperson_name'] == salesperson)].groupby(
     #     'product_name').agg({'price_bef_vat': 'sum'})
     ventas_agg_top3 = ventas_agg.sort_values(
         by="price_bef_vat", ascending=False).head(3)
     ventas_agg_top3.reset_index(inplace=True)
+    ventas_agg_top3['price_bef_vat'].map('${:,.2f}'.format)
     return(ventas_agg_top3)
 
 
@@ -238,19 +242,19 @@ def top_20_sales_products(city=None, channel=None, salesperson=None, product=Non
     if salesperson:
         ventas_filtered = ventas[(ventas['salesperson_name'] == salesperson)]
     if product:
-        ventas_filtered = ventas_filtered[ventas_filtered['product_name'].isin(product)]
+        ventas_filtered = ventas_filtered[ventas_filtered['product_description'].isin(product)]
     if customer:
         ventas_filtered = ventas_filtered[ventas_filtered['customer_name'].isin(customer)]
     if product_line:
         ventas_filtered = ventas[(ventas['product_line'] == product_line)]
-    ventas_agg = ventas_filtered.groupby('product_name').agg({'invoice_number': 'count'})
+    ventas_agg = ventas_filtered.groupby('product_description').agg({'invoice_number': 'count'})
     ventas_agg_top20 = ventas_agg.sort_values(by="invoice_number", ascending=False).head(20)
     ventas_agg_top20.reset_index(inplace=True)
     return(ventas_agg_top20)
 
 def sales_by_product_graph(city=None, channel=None, salesperson=None, product=None, customer=None, year=2019, product_line=None):
     ventas_agg_top20 = top_20_sales_products(city, channel, salesperson, product, customer)
-    top_sale_products = ventas[ventas.product_name.isin(ventas_agg_top20['product_name'].head(3))].copy()
+    top_sale_products = ventas[ventas.product_description.isin(ventas_agg_top20['product_description'].head(3))].copy()
     # top_sale_products = top_sale_products[(top_sale_products['city_name'] == city) & (top_sale_products['type_client'] == channel) & (top_sale_products['salesperson_name'] == salesperson)]
     if city:
         top_sale_products = top_sale_products[(top_sale_products['city_name'] == city)]    
@@ -259,14 +263,14 @@ def sales_by_product_graph(city=None, channel=None, salesperson=None, product=No
     if salesperson:
         top_sale_products = top_sale_products[(top_sale_products['salesperson_name'] == salesperson)]
     if product:
-        top_sale_products = top_sale_products[top_sale_products['product_name'].isin(product)]
+        top_sale_products = top_sale_products[top_sale_products['product_description'].isin(product)]
     if customer:
         top_sale_products = top_sale_products[top_sale_products['customer_name'].isin(customer)]
     if product_line:
         top_sale_products = top_sale_products[(top_sale_products['product_line'] == product_line)]
     top_sale_products['invoice_year'] = pd.DatetimeIndex(top_sale_products['invoice_date']).year
     top_sale_products['invoice_month'] = pd.DatetimeIndex(top_sale_products['invoice_date']).month
-    top_sales_prod_agg = top_sale_products.groupby(['invoice_year', 'invoice_month', 'product_name']).agg({'invoice_number': 'count'})
+    top_sales_prod_agg = top_sale_products.groupby(['invoice_year', 'invoice_month', 'product_description']).agg({'invoice_number': 'count'})
     top_sales_prod_agg.reset_index(inplace=True)
     top_sales_year = top_sales_prod_agg[top_sales_prod_agg['invoice_year'] == year]
     return top_sales_year
@@ -285,7 +289,7 @@ def sales_by_channel(city=None, channel=None, salesperson=None, product=None, cu
     if salesperson:
         ventas_filtered = ventas[(ventas['salesperson_name'] == salesperson)]
     if product:
-        ventas_filtered = ventas_filtered[ventas_filtered['product_name'].isin(product)]
+        ventas_filtered = ventas_filtered[ventas_filtered['product_description'].isin(product)]
     if customer:
         ventas_filtered = ventas_filtered[ventas_filtered['customer_name'].isin(customer)]
     if product_line:
@@ -311,7 +315,7 @@ def get_total_sales_by_year(city=None, channel=None, salesperson=None, product=N
     if salesperson:
         ventas_filtered = ventas[(ventas['salesperson_name'] == salesperson)]
     if product:
-        ventas_filtered = ventas_filtered[ventas_filtered['product_name'].isin(product)]
+        ventas_filtered = ventas_filtered[ventas_filtered['product_description'].isin(product)]
     if customer:
         ventas_filtered = ventas_filtered[ventas_filtered['customer_name'].isin(customer)]
     if product_line:
@@ -356,7 +360,7 @@ layout = html.Div([
                     dcc.Dropdown(
                         id='product_dd',
                         options=[{'label': i, 'value': i} for i in products],
-                        value=['PAN ARROZ ROSQUILLA CHIA LINAZA 75G *12','TÉ VERDE SPIRULINA SPIRUTÉ 30 BOLS *45G','PAN ARROZ ROSQUILLA CHIA LINAZA 40G  *12',''],
+                        value=[' Docena Rosquillas Chia y linaza 75 gChia y linaza 75g docena',' Docena Rosquillas Chia y linaza 40 gChia y linaza 40g docena','Spiruté verde unidad 30 bolsitas x 1.5g',''],
                         multi=True,
                         placeholder="Select a product (If empty all products are selected)",
                         # style={'width': '50%'}
@@ -478,10 +482,21 @@ layout = html.Div([
                     dt.DataTable(id='datatable-top-products',
                             #  columns=[{"name": i, "id": i}
                             #           for i in ventas_agg_top_prod.columns],
-                            columns = [{'id': 'product_name', 'name': 'Product Name'}, {'id': 'invoice_number', 'name': 'Items Qty'}],
-                             data=ventas_agg_top_prod.to_dict('records')), width=3, style={'padding-right': '40px'}
+                            columns = [{'id': 'product_description', 'name': 'Product Name'}, 
+                                        {'id': 'invoice_number', 'name': 'Items Qty','type': 'numeric',
+                                        'format': Format(
+                                                            scheme=Scheme.fixed, 
+                                                            precision=2,
+                                                            group=Group.yes,
+                                                            groups=3,
+                                                            group_delimiter=',',
+                                                            decimal_delimiter='.',
+                                                            symbol=Symbol.no)}],
+                            data=ventas_agg_top_prod.to_dict('records'),
+                            ), width=3, style={'padding-right': '40px'}
                 ),
             ]),
+            dbc.Row([html.Br()]),
             dbc.Row([
                 dbc.Col(html.Div([html.H3(children='Top Products by Price')],className="p"), className="mb-2 text-left"),
             ]),
@@ -490,7 +505,8 @@ layout = html.Div([
                     dt.DataTable(id='datatable-top-products-cop',
                             #  columns=[{"name": i, "id": i}
                             #           for i in ventas_agg_top_prod_cop.columns],
-                            columns = [{'id': 'product_name', 'name': 'Product Name'}, {'id': 'price_bef_vat', 'name': 'Sales Amount'}],
+                            columns = [{'id': 'product_description', 'name': 'Product Name'}, 
+                                        {'id': 'price_bef_vat', 'name': 'Sales Amount','type': 'numeric','format': FormatTemplate.money(0)}],
                              data=ventas_agg_top_prod_cop.to_dict('records')), width=3, style={'padding-right': '40px'}
                 ),
             ]),
@@ -548,10 +564,10 @@ def update_table(city, channel, sales_person, product_value, customer, year, pro
     
     # Product Detail
     sales_by_product_data = sales_by_product_graph(city, channel, sales_person, product_value, customer, year, product_line)
-    products_top = sales_by_product_data['product_name'].unique()
+    products_top = sales_by_product_data['product_description'].unique()
     fig1 = go.Figure()
     for product in products_top:
-        products_top_filtered = sales_by_product_data[sales_by_product_data['product_name']==product]
+        products_top_filtered = sales_by_product_data[sales_by_product_data['product_description']==product]
         fig1.add_trace(go.Bar(x=products_top_filtered['invoice_month'], y=products_top_filtered['invoice_number'],
                                  name=product,))
     fig1.update_layout(yaxis_title='Number of Items',
