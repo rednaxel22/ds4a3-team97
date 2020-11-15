@@ -1,71 +1,75 @@
-import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
-# must add this line in order for the app to be deployed successfully on Heroku
-from app import server
-from app import app
-# import all pages in the app
-from apps import sales, time, home, neural
+# needed only if running this as a single page app
+#external_stylesheets = [dbc.themes.LUX]
 
-# building the navigation bar
-# https://github.com/facultyai/dash-bootstrap-components/blob/master/examples/advanced-component-usage/Navbars.py
-nav_item_home = dbc.NavItem(dbc.NavLink("Home", href="/home"))
-nav_item_sales = dbc.NavItem(dbc.NavLink("Sales", href="/sales"))
-nav_item_inventory = dbc.NavItem(dbc.NavLink("Time Model", href="/time"))
-nav_item_neural = dbc.NavItem(dbc.NavLink("Predictions", href="/neural"))
+#app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-navbar = dbc.Navbar(
-    dbc.Container(
-        [
-            html.A(
-                # Use row and col to control vertical alignment of logo / brand
-                dbc.Row(
-                    [
-                        dbc.Col(html.Img(src="/assets/Logo-menu.png", height="50px")),
-                        dbc.Col(dbc.NavbarBrand("Naturela", className="ml-2")),
-                    ],
-                    align="center",
-                    no_gutters=True,
-                ),
-                href="/home",
-            ),
-            # dbc.NavbarToggler(id="navbar-toggler2"),
-            dbc.Collapse(
-                dbc.Nav(
-                    # right align dropdown menu with ml-auto className
-                    [nav_item_home, nav_item_sales, nav_item_inventory, nav_item_neural], className="ml-auto", navbar=True
-                ),
-                # id="navbar-collapse2",
-                navbar=True,
-            ),
-        ]
-    ),
-    # color="dark",
-    # dark=True,
-    className="mb-5",
-)
+# change to app.layout if running as single page app instead
+layout = html.Div([
+    dbc.Container([
+        dbc.Row([
+            dbc.Col(html.H1("Naturela Analytics Analysis Dashboard", className="text-center")
+                    , className="mb-5 mt-5")
+        ]),
+        dbc.Row([
+            dbc.Col(html.H5(children='This is the intro of the manual and the research'
+                                     )
+                    , className="mb-4")
+            ]),
 
-# embedding the navigation bar
-app.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
-    navbar,
-    html.Div(id='page-content')
+        dbc.Row([
+            dbc.Col(html.H5(children='This is a little more detail on the process here and there.')
+                    , className="mb-5")
+        ]),
+
+        dbc.Row([
+            dbc.Col(html.Iframe(src=f'https://www.youtube.com/embed/5cnpaf1H0pQ', height="400px", width="720px")
+                    , className="mb-5 mt-5 text-center")
+        ]),
+
+        dbc.Row([
+            dbc.Col(dbc.Card(children=[html.H3(children='This is a link to something with link that needs a card css',
+                                               className="text-center"),
+                                       dbc.Row([dbc.Col(dbc.Button("Global", href="https://data.europa.eu/euodp/en/data/dataset/covid-19-coronavirus-data/resource/55e8f966-d5c8-438e-85bc-c7a5a26f4863",
+                                                                   color="primary"),
+                                                        className="mt-3"),
+                                                dbc.Col(dbc.Button("Singapore", href="https://data.world/hxchua/covid-19-singapore",
+                                                                   color="primary"),
+                                                        className="mt-3")], justify="center")
+                                       ],
+                             body=True, color="dark", outline=True)
+                    , width=4, className="mb-4"),
+
+            dbc.Col(dbc.Card(children=[html.H3(children='Others links',
+                                               className="text-center"),
+                                       dbc.Button("GitHub",
+                                                  href="https://github.com/meredithwan/covid-dash-app",
+                                                  color="primary",
+                                                  className="mt-3"),
+                                       ],
+                             body=True, color="dark", outline=True)
+                    , width=4, className="mb-4"),
+
+            dbc.Col(dbc.Card(children=[html.H3(children='Others links',
+                                               className="text-center"),
+                                       dbc.Button("Medium",
+                                                  href="https://medium.com/@meredithwan",
+                                                  color="primary",
+                                                  className="mt-3"),
+
+                                       ],
+                             body=True, color="dark", outline=True)
+                    , width=4, className="mb-4")
+        ], className="mb-5"),
+
+
+    ])
+
 ])
 
 
-@app.callback(Output('page-content', 'children'),
-              [Input('url', 'pathname')])
-def display_page(pathname):
-    if pathname == '/sales':
-        return sales.layout
-    elif pathname == '/time':
-        return time.layout
-    elif pathname == '/neural':
-        return neural.layout
-    else:
-        return home.layout
-
-if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', debug=True, threaded=True)
+# needed only if running this as a single page app
+# if __name__ == '__main__':
+#     app.run_server(host='127.0.0.1', debug=True)
