@@ -191,10 +191,10 @@ layout = html.Div([
     [Output('time-city', 'figure'),
     ],
     [Input('cities_dd', "value"),
-    Input('channel_dd', "value"),
-    Input('product_line_dd', "value"),
+    # Input('channel_dd', "value"),
+    # Input('product_line_dd', "value"),
     ])
-def update_table(city, channel, product_line):
+def update_table(city):
     
     fig1 = prophet_model_city(city)
     return fig1
