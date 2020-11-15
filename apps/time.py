@@ -176,8 +176,8 @@ layout = html.Div([
                 ])
             ]),
             dbc.Row([
-                dbc.Col([html.Div([html.H5(children='This is the result of a Time Series using FBProphet as a model. Each dashboard update execute the model to ' +
-                    'predict new values to one year in the future. This model is done using City as the main dimension.')], className="p-3")])
+                dbc.Col([html.Div([html.H5(children='This is the result of a Time Series using FBProphet as a model. Each dashboard update executes the model to ' +
+                    'identify trends one year in the future. This model is done using City as the main dimension.')], className="p-3")])
             ])
         ],width=4),
         dbc.Col([
@@ -199,8 +199,8 @@ layout = html.Div([
                 ])
             ]),
             dbc.Row([
-                dbc.Col([html.Div([html.H5(children='This is the result of a Time Series using FBProphet as a model. Each dashboard update execute the model to ' +
-                    'predict new values to one year in the future. This model is done using Distribution Channel as the main dimension.')], className="p-3")])
+                dbc.Col([html.Div([html.H5(children='This is the result of a Time Series using FBProphet as a model. Each dashboard update executes the model to ' +
+                    'identify trends one year in the future. This model is done using Distribution Channel as the main dimension.')], className="p-3")])
             ])
         ],width=4),
         dbc.Col([
@@ -223,7 +223,7 @@ layout = html.Div([
             ]),
             dbc.Row([
                 dbc.Col([html.Div([html.H5(children='This is the result of a Time Series using FBProphet as a model. Each dashboard update execute the model to ' +
-                    'predict new values to one year in the future. This model is done using Product Line as the main dimension.')], className="p-3")])
+                    'identify trends one year in the future. This model is done using Product Line as the main dimension.')], className="p-3")])
             ])
         ],width=4),
         dbc.Col([
