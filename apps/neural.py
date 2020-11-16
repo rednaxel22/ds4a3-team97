@@ -270,22 +270,25 @@ layout = html.Div([
 
 ])
 
-@app.callback([Output('time-nn-city', 'figure')],[Input('cities_nn_dd', 'value')])
+@app.callback(
+    Output('time-nn-city', 'figure'),
+    Input('cities_nn_dd', 'value')
+)
 def update_city_prediction_graph(cities_nn_dd):
     city_prediction_model_figure = neuralnet_city_model(cities_nn_dd)
     return city_prediction_model_figure
 
-@app.callback([
-    Output('time-nn-channel', 'figure')],
-    [Input('channel_nn_dd', 'value')]
+@app.callback(
+    Output('time-nn-channel', 'figure'),
+    Input('channel_nn_dd', 'value')
 )
 def update_chan_prediction_graph(channel_nn_dd):
     chan_prediction_model_figure = neuralnet_channel_model(channel_nn_dd)
     return chan_prediction_model_figure
 
 @app.callback(
-    [Output('time-nn-product-line', 'figure')],
-    [Input('product_line_nn_dd', 'value')]
+    Output('time-nn-product-line', 'figure'),
+    Input('product_line_nn_dd', 'value')
 )
 def update_prol_prediction_graph(product_line_nn_dd):
     prol_prediction_model_figure = neuralnet_product_line_model(product_line_nn_dd)
