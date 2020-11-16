@@ -14,54 +14,25 @@ layout = html.Div([
                     , className="mb-5 mt-5")
         ]),
         dbc.Row([
-            dbc.Col(html.H5(children='This is the intro of the manual and the research'
-                                     )
-                    , className="mb-4")
+            dbc.Col(html.Div("Naturela, providing nutrition and well-being since 2007, with local and natural ingredients of high nutritional value; using the spirulina in most of the products."), align="baseline"),
             ]),
 
         dbc.Row([
-            dbc.Col(html.H5(children='This is a little more detail on the process here and there.')
-                    , className="mb-5")
-        ]),
-
+            dbc.Col(html.Div("The uncertainty of our planning team when making the forecast (number of units to produce and raw materials to buy), due to the high number of references that are handled month by month and variables to consider such as product category, price, sales channel, customer location and customer type makes it essential for the team to have a model that supports this process. Actually, the production is planned based on sales historic of the previous year."), align="around"),
+        ], justify="center"),
         dbc.Row([
             dbc.Col(html.Iframe(src=f'https://www.youtube.com/embed/5cnpaf1H0pQ', height="400px", width="720px")
                     , className="mb-5 mt-5 text-center")
         ]),
 
         dbc.Row([
-            dbc.Col(dbc.Card(children=[html.H3(children='This is a link to something with link that needs a card css',
-                                               className="text-center"),
-                                       dbc.Row([dbc.Col(dbc.Button("Global", href="https://data.europa.eu/euodp/en/data/dataset/covid-19-coronavirus-data/resource/55e8f966-d5c8-438e-85bc-c7a5a26f4863",
-                                                                   color="primary"),
-                                                        className="mt-3"),
-                                                dbc.Col(dbc.Button("Singapore", href="https://data.world/hxchua/covid-19-singapore",
-                                                                   color="primary"),
-                                                        className="mt-3")], justify="center")
-                                       ],
-                             body=True, color="dark", outline=True)
-                    , width=4, className="mb-4"),
-
-            dbc.Col(dbc.Card(children=[html.H3(children='Others links',
-                                               className="text-center"),
-                                       dbc.Button("GitHub",
-                                                  href="https://github.com/meredithwan/covid-dash-app",
+            dbc.Col(dbc.Card(children=[dbc.Button("Visit us in naturela.com",
+                                                  href="https://naturela.com/",
                                                   color="primary",
                                                   className="mt-3"),
                                        ],
                              body=True, color="dark", outline=True)
-                    , width=4, className="mb-4"),
-
-            dbc.Col(dbc.Card(children=[html.H3(children='Others links',
-                                               className="text-center"),
-                                       dbc.Button("Medium",
-                                                  href="https://medium.com/@meredithwan",
-                                                  color="primary",
-                                                  className="mt-3"),
-
-                                       ],
-                             body=True, color="dark", outline=True)
-                    , width=4, className="mb-4")
+                    , width=12, className="mb-4"),
         ], className="mb-5"),
 
 
