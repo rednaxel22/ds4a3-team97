@@ -68,4 +68,4 @@ def display_page(pathname):
         return home.layout
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', debug=True, threaded=True)
+    app.run_server(host='0.0.0.0', debug=False, threaded=True, dev_tools_ui=False, dev_tools_props_check=False)
